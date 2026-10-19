@@ -1,0 +1,79 @@
+plugins {
+    id 'fabric-loom' version '1.9.2'
+    id 'maven-publish'
+}
+version = '0.1.14'
+group = 'dev.youssef.soulbound'
+base { archivesName = 'soulbound-plus' }
+repositories { mavenCentral() }
+dependencies {
+    minecraft 'com.mojang:minecraft:1.21.1'
+    mappings 'net.fabricmc:yarn:1.21.1+build.3:v2'
+    modImplementation 'net.fabricmc:fabric-loader:0.16.14'
+    modImplementation 'net.fabricmc.fabric-api:fabric-api:0.116.6+1.21.1'
+    modImplementation files('libs/turnbattle-2.0.21.jar')
+}
+java { toolchain { languageVersion = JavaLanguageVersion.of(21) }; withSourcesJar() }
+tasks.withType(JavaCompile).configureEach { options.release = 21 }
+loom { mixin { defaultRefmapName = 'soulbound-possession-refmap.json' } }
+tasks.register('rulesTest', JavaExec) { dependsOn testClasses; classpath = sourceSets.test.runtimeClasspath; mainClass = 'com.pixelcite.turnbattle.PosRulesTest' }
+tasks.register('orderRulesTest', JavaExec) { dependsOn testClasses; classpath = sourceSets.test.runtimeClasspath; mainClass = 'com.pixelcite.turnbattle.PosOrderRulesTest' }
+check.dependsOn rulesTest, orderRulesTest
+jar { from('LICENSE') }
+
+// Optional Fabric integration smoke test; stops at the normal EULA gate, before creating a world.
+tasks.register('skillSmokeJar', Jar) {
+    dependsOn testClasses
+    archiveFileName = 'soulboundplus-skill-smoke.jar'
+    destinationDirectory = layout.buildDirectory.dir('smoke')
+    from sourceSets.test.output
+    from 'src/testmod'
+}
+loom.runs {
+    skillSmoke {
+        server()
+        name = 'Skill balance integration smoke'
+        runDir = 'run-skill-smoke'
+        vmArg "-Dfabric.addMods=${layout.buildDirectory.file('smoke/soulboundplus-skill-smoke.jar').get().asFile.absolutePath}"
+    }
+}
+tasks.named('runSkillSmoke') { dependsOn 'skillSmokeJar' }
+
+// Client-only mixin transformation smoke test, terminating before a window/world is created.
+tasks.register('visionSmokeJar', Jar) {
+    dependsOn testClasses
+    archiveFileName = 'soulboundplus-vision-smoke.jar'
+    destinationDirectory = layout.buildDirectory.dir('smoke')
+    from sourceSets.test.output
+    from 'src/visiontestmod'
+}
+loom.runs {
+    visionSmoke {
+        client()
+        name = 'Mob vision client transformation smoke'
+        runDir = 'run-vision-smoke'
+        vmArg "-Dfabric.addMods=${layout.buildDirectory.file('smoke/soulboundplus-vision-smoke.jar').get().asFile.absolutePath}"
+    }
+}
+tasks.named('runVisionSmoke') { dependsOn 'visionSmokeJar' }
+
+// Download the optional test mods into integration-mods; they are never bundled in the addon.
+if (project.hasProperty('bodyGearIntegration')) {
+    dependencies { modLocalRuntime fileTree(dir: 'integration-mods', include: '*.jar') }
+}
+tasks.register('bodyGearSmokeJar', Jar) {
+    dependsOn testClasses
+    archiveFileName = 'soulboundplus-bodygear-smoke.jar'
+    destinationDirectory = layout.buildDirectory.dir('smoke')
+    from sourceSets.test.output
+    from 'src/geartestmod'
+}
+loom.runs {
+    bodyGearSmoke {
+        server()
+        name = 'Body gear compatibility smoke'
+        runDir = 'run-bodygear-smoke'
+        vmArg "-Dfabric.addMods=${layout.buildDirectory.file('smoke/soulboundplus-bodygear-smoke.jar').get().asFile.absolutePath}"
+    }
+}
+tasks.named('runBodyGearSmoke') { dependsOn 'bodyGearSmokeJar' }

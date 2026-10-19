@@ -1,0 +1,19 @@
+SoulBound+ 0.1.14 validation — 2026-10-19
+Target: Minecraft 1.21.1, Java 21, Fabric Loader 0.16.14, Fabric API 0.116.6+1.21.1, supplied Soulbound 2.0.21.
+
+PASS production Gradle build and remapJar, separate from Fabric smoke runs.
+PASS 37826 skill-order checks.
+PASS 33140 possession rule checks.
+
+The possession suite covers odds/thresholds, proximity re-entry, vision gates, timed reveal/glow stages, five directional pulse peaks at multiple durations, changing directions, finite/bounded displacement samples, an entirely separate removal phase with zero struggle displacement at every sampled time, short-duration phase scaling, and continuous chest tug/recoil.
+PASS 2,025 Fabric server checks across 233 active skills. Includes previous balance/persistence, dummy visibility/proximity/combat, command limits and Monster duration parity checks, plus fresh 10/30 defaults, one-time legacy 3/15 migration, preservation of custom and versioned settings, removal of the overpower duration, and transformed native entry packet redirect. Config fixtures restore prior contents/state afterward.
+PASS 131 client checks: actual client mixin transformation; native extraction and entry-ring reflection; final model-angle hook; an actual zombie model whose arms-forward stance is replaced, wrist offset applied only once, and prior native pose context restored; player-walk pose transfer preserving mob proportions; restoration of original mob pose; independent-arm illager detection, crossed-arm hiding and visibility restoration; identification of soul actions versus menu actions for camera policy; free-camera and scoped look wrapper transformation; existing menu/battle/vision/glow/settings hooks and eight model resource parsing checks. Vanilla registries are bootstrapped for model/identity fixtures, but no world, client window, or entity constructor is started.
+PASS production archive integrity, exact upstream dependency, required mixin/refmap/classes, native entry descriptor, final renderer target and look-input wrapper remapping, removed early biped hook, eight models, and no upstream JAR or test mod bundled.
+HISTORICAL: 0.1.11 passed 20 body-gear public-API/codec fixture checks. Those unchanged optional interfaces were not rerun in 0.1.14; real backpack/core mods and Connector/Curios gameplay were not loaded.
+RETAINED compatibility evidence: supplied upstream 2.0.20/2.0.21 byte comparison and inspected changed client/menu/Replica code.
+
+Production JAR SHA-256: 8dac43ec450cbfda015d0fe77f1b02db8748d6a70826d969f36dbfdceebc59d2
+Upstream 2.0.21 JAR SHA-256: 5fca07f43e8af4d0ea629133c14d46365ecb0a01e27153a7af0ec5df8654f8b5
+
+LIMITS
+Both supplied 0.1.13 gameplay clips were inspected, including overlapping dummy struggle/removal and husk extraction with raised arms. The revised animation has not been viewed in a running graphical Minecraft world. Server integration stops before world creation; client integration stops before window creation. Automated checks do not establish the final pose appearance, real mouse look/perspective switching, physical collision behavior, actual mouse dragging, multiplayer ownership/death/reconnect, inventory transitions, unusual modded mob fit, or Connector gameplay. Generic humanoid adaptation requires standard biped bones or six independent root-level humanoid limbs; custom rigs need in-game verification. Use TESTING.md in a disposable world. Human dummy tests simulate one owner; they do not replace two-player tests. This is an addon; original upstream files are not altered.
